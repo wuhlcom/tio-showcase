@@ -1,0 +1,215 @@
+//1、连接服务器
+//2、鉴权
+//3、登录（可免）
+//4、进入群组（可免）
+//5、获取在线列表
+//6、聊天
+syntax = "proto3";
+//package tio;
+// 引入外部的proto对象
+//import "google/protobuf/any.proto";
+option java_package = "org.tio.examples.im.common.packets"; //设置java对应的package
+option java_multiple_files = true; //建议设置为true，这样会每个对象放在一个文件中，否则所有对象都在一个java文件中
+//设备类型
+enum DeviceType {
+	DEVICE_TYPE_UNKNOW = 0;
+	DEVICE_TYPE_PC = 1; //PC
+	DEVICE_TYPE_ANDROID = 2; //安卓
+	DEVICE_TYPE_IOS = 3; //IOS
+} /**
+ * 用户信息对象
+ */ message User {
+	int64 id = 1; //user id
+	string nick = 2; //user nick
+	string avatar = 3; //用户头像
+} /**
+ * 群组信息
+ */ message Group {
+	int64 id = 1; //group id
+	string nick = 2; //group nick
+	string avatar = 3; //group头像
+	int32 total = 4; //群组总人数
+	int32 online = 5; //群组在线人数
+} /**
+ * 客户端节点信息
+ */ message Client {
+	string id = 1; //ChannelContext id
+	string ip = 2; //客户端ip
+	int32 port = 3; //客户端port
+	User user = 4; //如果没登录过，则为null
+	string region = 5; //ip所在地区
+	string useragent = 6; //浏览器信息
+	string operator = 7; //ip所属运营商
+	Geolocation geolocation = 8; //地图定位
+	Address address = 9;       //地址
+}
+
+/**
+ * 地图定位
+ */
+message Geolocation {
+//lng、lat分别代表经度、纬度值
+	double lng = 1; //经度
+	double lat = 2; //纬度
+}
+
+/**
+ * 地址
+ */
+message Address {
+	string formattedaddress = 1;//地址: 浙江省杭州市西湖区古荡街道天目山路307号钱江·西溪新座
+	string adcode = 2;  //330106
+	string province = 3;  //浙江省
+	string city = 4; //杭州
+	string citycode = 5;  //0571
+	string district = 6;  //西湖区
+	string township = 7;    //古荡街区
+	string street = 8;   //天目山路
+	string streetnumber = 9;  //307号
+}
+
+enum Command {
+	COMMAND_UNKNOW = 0;
+	COMMAND_HANDSHAKE_REQ = 1; //握手请求，含http的websocket握手请求
+	COMMAND_HANDSHAKE_RESP = 2; //握手响应，含http的websocket握手响应
+	COMMAND_AUTH_REQ = 3; //鉴权请求
+	COMMAND_AUTH_RESP = 4; // 鉴权响应
+	COMMAND_JOIN_GROUP_REQ = 5; //申请进入群组
+	COMMAND_JOIN_GROUP_RESP = 6; //申请进入群组响应
+	COMMAND_JOIN_GROUP_NOTIFY_RESP = 7; //进入群组通知
+	COMMAND_EXIT_GROUP_NOTIFY_RESP = 8; //退出群组通知
+	COMMAND_CHAT_REQ = 9; //聊天请求
+	COMMAND_CHAT_RESP = 10; //聊天响应
+
+	//下面的还没实现 start
+	COMMAND_START_SHOW_REQ = 11; //开播请求
+	COMMAND_START_SHOW_RESP = 12; //开播响应
+	COMMAND_END_SHOW_REQ = 13; //停播请求
+	COMMAND_END_SHOW_NOTIFY_RESP = 14; //停播通知
+	//上面的还没实现  end
+	COMMAND_HEARTBEAT_REQ = 15; //心跳请求
+	COMMAND_HEARTBEAT_RESP = 16; //心跳响应
+	COMMAND_CLOSE_REQ = 17; //关闭请求
+	COMMAND_CLIENT_PAGE_REQ = 18; //分页请求Client列表
+	COMMAND_CLIENT_PAGE_RESP = 19; //返回Client列表
+	COMMAND_LOGIN_REQ = 20; //登录请求
+	COMMAND_LOGIN_RESP = 21; //登录响应
+	COMMAND_CANCEL_MSG_REQ = 22; //发出撤消消息指令(管理员可以撤消所有人的消息，自己可以撤消自己的消息)
+	COMMAND_CANCEL_MSG_RESP = 23; //收到撤消消息指令
+} /**
+ * 鉴权请求
+ */ message AuthReqBody {
+	string token = 1; //鉴权token
+	string deviceId = 2; // device id(手机设备id)
+	int64 seq = 3; //序列号
+	DeviceType deviceType = 4; //clienttype客户端类型1-pc 2-android 3-ios
+	string cid = 5; //渠道号
+	string appVersion = 6; //app版本号
+	string deviceInfo = 7; //手机型号信息，譬如华为某型号
+	string sign = 8; //签名
+	Geolocation geolocation = 9;//地图位置
+	Address address = 10;       //地址
+} /**
+ * 鉴权响应，收到鉴权响应则表示鉴权通过，否则服务器端就直接断开连接了
+ */ message AuthRespBody {
+//int64 time = 1;//消息发送时间
+} /**
+ * 登录请求
+ * 要么用token登录，要么用用户名和密码登录
+ */ message LoginReqBody {
+	string loginname = 1;
+	string password = 2;
+	string token = 3;
+} /**
+ * 登录响应
+ */ message LoginRespBody {
+	string token = 1; //用于免密码的token，登录成功才有
+	User user = 2; //登录成功才有
+} /**
+ * 加入群组请求
+ */ message JoinGroupReqBody {
+	string group = 1;
+} /**
+ * 加入群组申请的结果
+ */ enum JoinGroupResult {
+	JOIN_GROUP_RESULT_UNKNOW = 0; //不允许进入，原因为其它
+	JOIN_GROUP_RESULT_OK = 1; //允许进入
+	JOIN_GROUP_RESULT_NOT_EXIST = 2; //组不存在
+	JOIN_GROUP_RESULT_GROUP_FULL = 3; //组满
+	JOIN_GROUP_RESULT_IN_BACKLIST = 4; //在黑名单中
+	JOIN_GROUP_RESULT_TAKEOUTED = 5; //被踢
+} /**
+ * 加入群组响应
+ */ message JoinGroupRespBody {
+	JoinGroupResult result = 1;
+	string group = 2;
+}
+//进入群组通知消息体
+message JoinGroupNotifyRespBody {
+	Client client = 1;
+	string group = 2;
+}
+//退出群组通知消息体
+message ExitGroupNotifyRespBody {
+	Client client = 1;
+	string group = 2;
+} /**
+ * 聊天类型
+ */ enum ChatType {
+	CHAT_TYPE_UNKNOW = 0; //未知
+	CHAT_TYPE_PUBLIC = 1; //公聊
+	CHAT_TYPE_PRIVATE = 2; //私聊
+} /**
+ * 聊天请求
+ */ message ChatReqBody {
+	int64 time = 1; //消息发送时间
+	ChatType type = 2; //聊天类型
+	string text = 3; //聊天内容
+	string group = 4; //消息发到哪个群组
+	string toId = 5; //目标channel id
+} /**
+ * 聊天响应
+ */ message ChatRespBody {
+	int64 time = 1; //消息发送时间
+	ChatType type = 2; //聊天类型
+	string text = 3; //聊天内容
+	Client fromClient = 4;
+	Client toClient = 5;
+	string group = 6; //目标组id
+	string id = 7; //消息id，全局唯一
+} /**
+ * 分页请求Client列表
+ */ message ClientPageReqBody {
+	int32 pageIndex = 1; //第几页
+	int32 pageSize = 2; //每页多少条
+	string group = 3; //如果没有，则表示获取所有的
+} /**
+ * Client分页列表
+ */ message ClientPageRespBody {
+	int32 pageIndex = 1; //第几页
+	int32 pageSize = 2; //每页多少条
+	int32 recordCount = 3; //总条数
+	repeated Client clients = 4; //
+}
+////////// -----  下面的暂时没用到  -----
+/**
+ * 开始直播请求
+ */ message BeginToLiveReqBody {
+	int64 time = 1; //消息发送时间
+} /**
+ * 开始直播响应
+ */ message BeginToLiveRespBody {
+	int64 time = 1; //消息发送时间
+	int64 liveid = 2; //本次直播id
+	string rtmppublishurl = 3; //rtmp推流地址
+	string rtmpliveurl = 4; //rtmp播放地址
+} /**
+ * 结束直播请求
+ */ message EndLiveReqBody {
+	int64 time = 1; //消息发送时间
+} /**
+ * 结束直播响应
+ */ message EndLiveRespBody {
+	int64 time = 1; //消息发送时间
+	int64 liveid = 2; //本次直播id
+}

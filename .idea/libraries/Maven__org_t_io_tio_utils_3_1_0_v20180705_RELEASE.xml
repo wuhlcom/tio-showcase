@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.t-io:tio-utils:3.1.0.v20180705-RELEASE">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/t-io/tio-utils/3.1.0.v20180705-RELEASE/tio-utils-3.1.0.v20180705-RELEASE.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/t-io/tio-utils/3.1.0.v20180705-RELEASE/tio-utils-3.1.0.v20180705-RELEASE-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/t-io/tio-utils/3.1.0.v20180705-RELEASE/tio-utils-3.1.0.v20180705-RELEASE-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

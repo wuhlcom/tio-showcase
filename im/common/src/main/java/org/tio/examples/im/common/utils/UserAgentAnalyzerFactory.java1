@@ -1,0 +1,45 @@
+package org.tio.examples.im.common.utils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.basjes.parse.useragent.UserAgentAnalyzer;
+
+/**
+ * @author tanyaowu 
+ * 2017年5月16日 下午4:13:34
+ */
+public abstract class UserAgentAnalyzerFactory {
+	private static Logger log = LoggerFactory.getLogger(UserAgentAnalyzerFactory.class);
+	
+	private static UserAgentAnalyzer userAgentAnalyzer = null;
+	
+	public static UserAgentAnalyzer getUserAgentAnalyzer(){
+		
+//		userAgentAnalyzer = Singleton.get(UserAgentAnalyzer.class);
+//		return userAgentAnalyzer;
+		if (userAgentAnalyzer == null) {
+			synchronized (UserAgentAnalyzerFactory.class) {
+				if (userAgentAnalyzer == null) {
+					userAgentAnalyzer = UserAgentAnalyzer.newBuilder().hideMatcherLoadStats().withCache(2500).build();
+				}
+			}
+		}
+		return userAgentAnalyzer;
+	}
+
+	/**
+	 * 
+	 * @author tanyaowu
+	 */
+	public UserAgentAnalyzerFactory() {
+	}
+
+	/**
+	 * @param args
+	 * @author tanyaowu
+	 */
+	public static void main(String[] args) {
+
+	}
+}
